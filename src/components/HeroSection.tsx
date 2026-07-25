@@ -11,6 +11,7 @@ import { adaptArticles } from "../services/articleAdapter";
 import { displayDek, displayHeadline } from "../services/articleDisplay";
 import styles from "../app/newsroom.module.css";
 import { formatDisplayTag } from "../lib/formatDisplayTag";
+import { publicArticleRouteSegment } from "../features/article/utils/formatArticle";
 
 const ROTATION_INTERVAL = 5000;
 const EMPTY_STORIES: ContentArticle[] = [];
@@ -165,6 +166,8 @@ export default function HeroSection({
   }
 
   const { title, summary, category } = storyFields(story, lang);
+  const articleSegment = publicArticleRouteSegment(story);
+  const articleUrl = `/article/${articleSegment}`;
   const rawTags = (lang === "hi" ? story.tags : story.tagsEn) ?? [];
   const tags = rawTags.slice(0, 8).map((tag) => formatDisplayTag(tag)).filter(Boolean);
 
@@ -199,7 +202,7 @@ export default function HeroSection({
               <button
                 type="button"
                 className="hero-cin-read-btn-inline"
-                onClick={() => navigate(`/article/${story.id}`)}
+                onClick={() => navigate(articleUrl)}
               >
                 {t("पूरी खबर", "Read Story")}
                 <ArrowUpRight size={13} aria-hidden />
@@ -217,7 +220,7 @@ export default function HeroSection({
               >
                 <h1
                   className="hero-cin-headline"
-                  onClick={() => navigate(`/article/${story.id}`)}
+                  onClick={() => navigate(articleUrl)}
                   style={{ cursor: "pointer" }}
                 >
                   {title}
@@ -234,13 +237,13 @@ export default function HeroSection({
                 : undefined),
               cursor: "pointer",
             }}
-            onClick={() => navigate(`/article/${story.id}`)}
+            onClick={() => navigate(articleUrl)}
             role="link"
             tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
-                navigate(`/article/${story.id}`);
+                navigate(articleUrl);
               }
             }}
             aria-label={title}
