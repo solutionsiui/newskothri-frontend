@@ -33,7 +33,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  padding-bottom: 8px;
+  padding: 8px 16px;
   border-bottom: 1px solid color-mix(in srgb, var(--card-border) 86%, transparent);
 }
 
@@ -479,12 +479,13 @@ button.cardLink {
   }
 
   .sectionHead {
-    padding-bottom: 12px;
+    padding: 8px 0px;
+    margin-top:16px;
     border-bottom: 1px solid color-mix(in srgb, var(--card-border) 72%, transparent);
     background: linear-gradient(
       90deg,
-      color-mix(in srgb, var(--brand-red) 10%, transparent) 0%,
-      transparent 32%
+      color-mix(in srgb, var(--brand-red) 8%, transparent) 0%,
+      transparent 60%
     );
   }
 

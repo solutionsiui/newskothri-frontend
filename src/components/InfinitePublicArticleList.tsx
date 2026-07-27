@@ -8,6 +8,7 @@ import { dek as homeDek, headline as homeHeadline } from "../features/home/serve
 import { adaptArticles } from "../services/articleAdapter";
 import { fetchPublishedArticlesPage } from "../services/newsApi";
 import ArticleImage from "./ArticleImage";
+import { publicArticleRouteSegment } from "../features/article/utils/formatArticle";
 import styles from "../app/newsroom.module.css";
 
 const PAGE_SIZE = 24;
@@ -51,22 +52,35 @@ function ArticleCard({
   locale: "hi" | "en";
   feedSource: FeedSource;
 }) {
+  const routeSegment = publicArticleRouteSegment(item);
+  const headline = itemHeadline(item, locale, feedSource);
+  const dek = itemDek(item, locale, feedSource);
+  const category = locale === "hi" ? item.category : item.categoryEn;
+
   return (
-    <article className={`card-default ${styles.cardBody}`}>
-      <Link href={`/article/${item.id}`} className={styles.cardLink}>
-        <div className={styles.cardMedia}>
+    <article className="card card-default">
+      <Link href={`/article/${routeSegment}`} className="card-link-reset card-default-link">
+        <div className="card-img-wrap">
+          {item.isBreaking && (
+            <span className="card-breaking-tag">
+              {locale === "hi" ? "ब्रेकिंग" : "Breaking"}
+            </span>
+          )}
           <ArticleImage
             src={item.image}
-            alt={itemHeadline(item, locale, feedSource)}
+            alt={headline}
             width={item.imageWidth}
             height={item.imageHeight}
-            className={styles.cardImage}
+            className="card-img"
             sizes="(max-width: 640px) 100vw, (max-width: 900px) 50vw, 33vw"
             loading="lazy"
           />
         </div>
-        <h3 className={styles.cardTitle}>{itemHeadline(item, locale, feedSource)}</h3>
-        <p className={styles.cardSummary}>{itemDek(item, locale, feedSource)}</p>
+        <div className="card-body">
+          <span className="card-cat-label">{category}</span>
+          <h3 className="card-title">{headline}</h3>
+          {dek ? <p className="card-summary">{dek}</p> : null}
+        </div>
       </Link>
     </article>
   );

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Clock } from "lucide-react";
 import type { NewsItem } from "../types/article";
-import { categoryColors } from "../utils/formatArticle";
+import { categoryColors, publicArticleRouteSegment } from "../utils/formatArticle";
 
 export default function PremiumRecCard({ item, lang }: { item: NewsItem; lang: string }) {
   const navigate = useNavigate();
@@ -13,14 +13,22 @@ export default function PremiumRecCard({ item, lang }: { item: NewsItem; lang: s
   const time = lang === "hi" ? item.time : item.timeEn;
   const cat = lang === "hi" ? item.category : item.categoryEn;
   const color = categoryColors[item.categorySlug] || "#BB1919";
-  const go = () => navigate(`/article/${item.id}`);
+  const routeSegment = publicArticleRouteSegment(item);
+  const go = () => navigate(`/article/${routeSegment}`);
+
   return (
     <article
       className="article-rec-card"
       role="link"
       tabIndex={0}
       onClick={go}
-      onKeyDown={(e) => e.key === "Enter" && go()}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          go();
+        }
+      }}
+      aria-label={title}
     >
       <div className="article-rec-card-media">
         {!err ? (
@@ -42,3 +50,4 @@ export default function PremiumRecCard({ item, lang }: { item: NewsItem; lang: s
     </article>
   );
 }
+
