@@ -28,6 +28,7 @@ function buildContentSecurityPolicy(): string {
     "https://*.doubleclick.net",
     "https://ep1.adtrafficquality.google",
     "https://ep2.adtrafficquality.google",
+    "https://*.adtrafficquality.google",
   ].filter(Boolean);
 
   const imgSrc = [
@@ -56,6 +57,7 @@ function buildContentSecurityPolicy(): string {
     "https://*.googlesyndication.com",
     "https://*.doubleclick.net",
     "https://*.google.com",
+    "https://*.adtrafficquality.google",
   ];
   if (process.env.NODE_ENV !== "production") {
     scriptSrc.push("'unsafe-eval'");
@@ -70,6 +72,7 @@ function buildContentSecurityPolicy(): string {
     "https://*.google.com",
     "https://ep1.adtrafficquality.google",
     "https://ep2.adtrafficquality.google",
+    "https://*.adtrafficquality.google",
   ];
 
   const directives = [
