@@ -22,6 +22,12 @@ function buildContentSecurityPolicy(): string {
     "https://region1.google-analytics.com",
     "https://www.googletagmanager.com",
     "https://accounts.google.com",
+    "https://pagead2.googlesyndication.com",
+    "https://*.googlesyndication.com",
+    "https://*.google.com",
+    "https://*.doubleclick.net",
+    "https://ep1.adtrafficquality.google",
+    "https://ep2.adtrafficquality.google",
   ].filter(Boolean);
 
   const imgSrc = [
@@ -34,6 +40,10 @@ function buildContentSecurityPolicy(): string {
     r2Host ? `https://${r2Host}` : null,
     apiHost ? `https://${apiHost}` : null,
     apiHost ? `http://${apiHost}` : null,
+    "https://*.googlesyndication.com",
+    "https://*.doubleclick.net",
+    "https://*.google.com",
+    "https://*.gstatic.com",
   ].filter(Boolean);
 
   const scriptSrc = [
@@ -42,6 +52,10 @@ function buildContentSecurityPolicy(): string {
     "https://www.googletagmanager.com",
     "https://www.google-analytics.com",
     "https://accounts.google.com",
+    "https://pagead2.googlesyndication.com",
+    "https://*.googlesyndication.com",
+    "https://*.doubleclick.net",
+    "https://*.google.com",
   ];
   if (process.env.NODE_ENV !== "production") {
     scriptSrc.push("'unsafe-eval'");
@@ -51,6 +65,11 @@ function buildContentSecurityPolicy(): string {
     "https://accounts.google.com",
     "https://www.youtube.com",
     "https://www.youtube-nocookie.com",
+    "https://*.googlesyndication.com",
+    "https://*.doubleclick.net",
+    "https://*.google.com",
+    "https://ep1.adtrafficquality.google",
+    "https://ep2.adtrafficquality.google",
   ];
 
   const directives = [
