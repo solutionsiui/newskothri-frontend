@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
+import Script from "next/script";
 import {
   getMetadataBase,
   localizedDefaultDescription,
@@ -65,19 +66,27 @@ export default async function RootLayout({
   const initialDark = jar.get("kn-dark")?.value === "1";
 
   return (
-    <html
-      lang={initialLang === "en" ? "en" : "hi"}
-      className={mukta.variable}
-      suppressHydrationWarning
-      style={{ colorScheme: initialDark ? "dark" : "light" }}
-      data-scroll-behavior="smooth"
-    >
-      <body suppressHydrationWarning>
-        <GoogleAnalytics />
-        <AppProviders initialLang={initialLang}>
-          <AppChrome initialDark={initialDark}>{children}</AppChrome>
-        </AppProviders>
-      </body>
-    </html>
-  );
+  <html
+    lang={initialLang === "en" ? "en" : "hi"}
+    className={mukta.variable}
+    suppressHydrationWarning
+    style={{ colorScheme: initialDark ? "dark" : "light" }}
+    data-scroll-behavior="smooth"
+  >
+    <head>
+      <Script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9323779736575532"
+        crossOrigin="anonymous"
+        strategy="afterInteractive"
+      />
+    </head>
+    <body suppressHydrationWarning>
+      <GoogleAnalytics />
+      <AppProviders initialLang={initialLang}>
+        <AppChrome initialDark={initialDark}>{children}</AppChrome>
+      </AppProviders>
+    </body>
+  </html>
+);
 }
