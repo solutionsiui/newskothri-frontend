@@ -1384,7 +1384,7 @@ a { text-decoration:none; color:inherit }
 }
 .article-author-time {
   display:flex; align-items:center; gap:5px;
-  font-family:var(--font-mono); font-size:11px; color:var(--ink-300); margin-top:3px; flex-wrap:wrap;
+  font-family:var(--font-mono); font-size:11px; color:var(--text-muted); margin-top:3px; flex-wrap:wrap;
 }
 .art-sep { width:3px; height:3px; border-radius:50%; background:var(--ink-300); display:inline-block }
 .article-share-row { display:flex; align-items:center; gap:6px }
@@ -1991,7 +1991,7 @@ a { text-decoration:none; color:inherit }
   gap: 5px;
   font-size: 10px;
   font-weight: 600;
-  color: var(--ink-400);
+  color: var(--text-muted);
   font-family: var(--font-ui);
   margin-top: auto;
 }
@@ -2418,7 +2418,7 @@ a { text-decoration:none; color:inherit }
 .aside-related-card:last-child { border-bottom:none }
 .aside-related-card:hover { background:var(--bg-secondary) }
 .aside-related-img {
-  width:76px; height:56px; border-radius:var(--r); overflow:hidden;
+  position:relative; width:76px; height:56px; border-radius:var(--r); overflow:hidden;
   flex-shrink:0; background:var(--bg-secondary);
 }
 .aside-related-img img { width:100%; height:100%; object-fit:cover }
@@ -2434,7 +2434,7 @@ a { text-decoration:none; color:inherit }
 }
 .aside-related-meta {
   display:flex; align-items:center; gap:4px;
-  font-size:10px; font-family:var(--font-mono); color:var(--ink-300); margin-top:2px;
+  font-size:10px; font-family:var(--font-mono); color:var(--text-muted); margin-top:2px;
 }
 
 /* Aside share widget */
@@ -2476,8 +2476,10 @@ a { text-decoration:none; color:inherit }
   border-bottom:1px solid var(--card-border); align-items:flex-start;
   transition:background var(--t);
 }
-.aside-mostread-item:last-child { border-bottom:none }
+.aside-mostread-list > li:last-child .aside-mostread-item { border-bottom:none }
 .aside-mostread-item:hover { background:var(--bg-secondary) }
+.aside-mostread-item:focus-visible,
+.aside-related-card:focus-visible { outline:2px solid var(--brand-red); outline-offset:-2px; }
 .aside-mostread-num {
   font-size:22px; font-weight:900; font-family:var(--font-ui);
   color:var(--ink-100); line-height:1; flex-shrink:0; width:28px;
@@ -2496,7 +2498,7 @@ a { text-decoration:none; color:inherit }
 }
 .aside-mostread-meta {
   display:flex; align-items:center; gap:4px;
-  font-size:10px; font-family:var(--font-mono); color:var(--ink-300); margin-top:4px;
+  font-size:10px; font-family:var(--font-mono); color:var(--text-muted); margin-top:4px;
 }
 
 /* ── 19. CATEGORY PAGE ── */
@@ -2982,6 +2984,18 @@ a { text-decoration:none; color:inherit }
   text-transform:uppercase;
   color:var(--text-muted);
 }
+.hero-breaking-formal-actions {
+  display:flex; align-items:center; justify-content:flex-end; gap:10px;
+}
+.hero-rotation-toggle {
+  display:inline-flex; align-items:center; justify-content:center; gap:5px;
+  min-height:32px; padding:5px 9px;
+  border:1px solid var(--card-border); border-radius:var(--r-sm);
+  background:var(--bg); color:var(--text-muted);
+  font:700 11px/1 var(--font-ui); cursor:pointer;
+}
+.hero-rotation-toggle:hover,
+.hero-rotation-toggle:focus-visible { color:var(--brand-red); border-color:var(--brand-red); }
 .hero-cinematic-inner {
   max-width:var(--container); margin:0 auto;
   display:grid; grid-template-columns:1fr 340px; gap:0;
@@ -3216,6 +3230,7 @@ a { text-decoration:none; color:inherit }
 }
 .hero-cin-side-item.active .hero-cin-side-num { color:var(--brand-red) }
 .hero-cin-side-thumb-wrap {
+  position:relative;
   width:88px; aspect-ratio:16 / 9; height:auto;
   border-radius:var(--r); overflow:hidden;
   flex-shrink:0; background:var(--bg-secondary);
@@ -3249,7 +3264,7 @@ a { text-decoration:none; color:inherit }
 }
 .hero-cin-side-meta {
   display:flex; align-items:center; gap:3px;
-  font-family:var(--font-mono); font-size:10px; color:var(--ink-300);
+  font-family:var(--font-mono); font-size:10px; color:var(--text-muted);
 }
 .hero-cin-tags-section {
   border-top:1px solid var(--card-border); padding:var(--sp-3) var(--sp-4) var(--sp-4);

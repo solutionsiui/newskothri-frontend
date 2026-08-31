@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { Clock, ArrowUpRight, Zap, Eye } from "lucide-react";
+import { Clock, ArrowUpRight, Zap, Eye, Pause, Play } from "lucide-react";
 import type { ContentArticle } from "../services/contentTypes";
 import { useLang } from "../context/LangContext";
 import { fetchPublishedArticles } from "../services/newsApi";
@@ -12,6 +12,7 @@ import { displayDek, displayHeadline } from "../services/articleDisplay";
 import styles from "../app/newsroom.module.css";
 import { formatDisplayTag } from "../lib/formatDisplayTag";
 import { publicArticleRouteSegment } from "../features/article/utils/formatArticle";
+import ArticleImage from "./ArticleImage";
 
 const ROTATION_INTERVAL = 5000;
 const EMPTY_STORIES: ContentArticle[] = [];
@@ -40,6 +41,7 @@ export default function HeroSection({
   const [heroLoading, setHeroLoading] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const [imgErr, setImgErr] = useState<Record<string | number, boolean>>({});
   const [heroAspect, setHeroAspect] = useState<Record<string | number, number>>({});
   const { lang, t } = useLang();
@@ -93,7 +95,7 @@ export default function HeroSection({
   );
 
   useEffect(() => {
-    if (stories.length <= 1 || reduceMotion) {
+    if (stories.length <= 1 || reduceMotion || isPaused) {
       if (intervalRef.current) clearInterval(intervalRef.current);
       return;
     }
@@ -105,16 +107,15 @@ export default function HeroSection({
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [stories.length, reduceMotion]);
+  }, [stories.length, reduceMotion, isPaused]);
 
   useEffect(() => {
-    if (stories.length <= 1 || reduceMotion) {
+    if (stories.length <= 1 || reduceMotion || isPaused) {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       return;
     }
 
     startTimeRef.current = Date.now();
-    setProgress(0);
 
     const tick = () => {
       const elapsed = Date.now() - startTimeRef.current;
@@ -130,7 +131,7 @@ export default function HeroSection({
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [stories.length, reduceMotion, activeIdx]);
+  }, [stories.length, reduceMotion, activeIdx, isPaused]);
 
   const displayIdx =
     stories.length === 0 ? 0 : Math.min(activeIdx, stories.length - 1);
@@ -174,16 +175,43 @@ export default function HeroSection({
   const progressWidth = (i: number) =>
     i < displayIdx ? "100%" : i === displayIdx ? `${fillProgress}%` : "0%";
 
+  const handleTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
+    let nextIndex: number | null = null;
+    if (event.key === "ArrowRight") nextIndex = (index + 1) % stories.length;
+    if (event.key === "ArrowLeft") nextIndex = (index - 1 + stories.length) % stories.length;
+    if (event.key === "Home") nextIndex = 0;
+    if (event.key === "End") nextIndex = stories.length - 1;
+    if (nextIndex == null) return;
+    event.preventDefault();
+    goTo(nextIndex);
+    document.getElementById(`hero-story-tab-${nextIndex}`)?.focus();
+  };
+
   return (
-    <section
-      className={`hero-cinematic-wrap ${styles.breakingSection}`}
-      aria-live="polite"
-    >
+    <section className={`hero-cinematic-wrap ${styles.breakingSection}`}>
       <div className="hero-breaking-formal-head section-inner">
         <h2 className="hero-breaking-formal-title">{t("ताज़ा खबर", "Breaking news")}</h2>
-        <p className="hero-breaking-formal-sub">
-          {t("लाइव अपडेट", "Live updates")}
-        </p>
+        <div className="hero-breaking-formal-actions">
+          <p className="hero-breaking-formal-sub">
+            {t("लाइव अपडेट", "Live updates")}
+          </p>
+          {stories.length > 1 && !reduceMotion ? (
+            <button
+              type="button"
+              className="hero-rotation-toggle"
+              onClick={() => setIsPaused((paused) => !paused)}
+              aria-pressed={isPaused}
+              aria-label={
+                isPaused
+                  ? t("खबरों का स्वतः बदलना शुरू करें", "Resume automatic story rotation")
+                  : t("खबरों का स्वतः बदलना रोकें", "Pause automatic story rotation")
+              }
+            >
+              {isPaused ? <Play size={13} aria-hidden /> : <Pause size={13} aria-hidden />}
+              <span>{isPaused ? t("चलाएँ", "Play") : t("रोकें", "Pause")}</span>
+            </button>
+          ) : null}
+        </div>
       </div>
 
       <div className="hero-cinematic-inner">
@@ -258,13 +286,17 @@ export default function HeroSection({
                 transition={reduceMotion ? { duration: 0 } : { duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
               >
                 {!imgErr[story.id] ? (
-                  <img
+                  <ArticleImage
                     src={story.image}
                     alt={title}
+                    width={story.imageWidth}
+                    height={story.imageHeight}
                     className="hero-cin-img"
+                    fill={false}
+                    sizes="(max-width: 768px) calc(100vw - 28px), (max-width: 1024px) calc(100vw - 320px), 900px"
                     loading="eager"
                     fetchPriority="high"
-                    decoding="async"
+                    style={{ width: "100%", height: "100%" }}
                     onLoad={(e) => handleHeroImgLoad(story.id, e)}
                     onError={() => setImgErr((e) => ({ ...e, [story.id]: true }))}
                   />
@@ -294,15 +326,20 @@ export default function HeroSection({
               {stories.map((s, i) => (
                 <button
                   key={String(s.id)}
+                  id={`hero-story-tab-${i}`}
                   type="button"
+                  role="tab"
                   className="hero-cin-progress-bar"
                   onClick={() => goTo(i)}
+                  onKeyDown={(event) => handleTabKeyDown(event, i)}
                   aria-label={`${t("खबर", "Story")} ${i + 1}`}
                   aria-selected={i === displayIdx}
+                  tabIndex={i === displayIdx ? 0 : -1}
                 >
                   <span
                     className="hero-cin-progress-fill"
                     style={{ width: progressWidth(i) }}
+                    aria-hidden="true"
                   />
                 </button>
               ))}
@@ -341,12 +378,14 @@ export default function HeroSection({
                   <span className="hero-cin-side-num">{String(i + 1).padStart(2, "0")}</span>
                   <div className="hero-cin-side-thumb-wrap">
                     {!imgErr[s.id] ? (
-                      <img
+                      <ArticleImage
                         src={s.image}
                         alt=""
+                        width={s.imageWidth}
+                        height={s.imageHeight}
                         className="hero-cin-side-thumb"
+                        sizes="(max-width: 768px) 72px, (max-width: 1024px) 76px, 88px"
                         loading="lazy"
-                        decoding="async"
                         onError={() => setImgErr((e) => ({ ...e, [s.id]: true }))}
                       />
                     ) : (

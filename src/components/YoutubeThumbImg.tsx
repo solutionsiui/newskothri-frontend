@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import Image from "next/image";
 import { youtubeVideoIdFromUrl } from "../utils/youtube";
 
 type Props = {
   youtubeUrl: string;
   alt: string;
   className?: string;
+  sizes?: string;
   /** Used when URL has no id or all CDN images fail */
   fallbackSrc?: string;
 };
@@ -16,33 +18,39 @@ function thumbUrls(videoId: string) {
   };
 }
 
-/**
- * YouTube poster (maxres → hqdefault) with optional static fallback.
- */
-export default function YoutubeThumbImg({ youtubeUrl, alt, className, fallbackSrc }: Props) {
-  const id = useMemo(() => youtubeVideoIdFromUrl(youtubeUrl), [youtubeUrl]);
-  const urls = id ? thumbUrls(id) : null;
-  const primary = urls?.maxres ?? fallbackSrc ?? "";
-  const [src, setSrc] = useState(primary);
-  const [quality, setQuality] = useState<"maxres" | "hq" | "fallback">("maxres");
+type ThumbUrls = ReturnType<typeof thumbUrls>;
 
-  useEffect(() => {
-    if (urls) {
-      setSrc(urls.maxres);
-      setQuality("maxres");
-    } else {
-      setSrc(fallbackSrc || "");
-      setQuality("fallback");
-    }
-  }, [urls, fallbackSrc]);
+function ResolvedYoutubeThumb({
+  primary,
+  urls,
+  fallbackSrc,
+  alt,
+  className,
+  sizes,
+}: {
+  primary: string;
+  urls: ThumbUrls | null;
+  fallbackSrc?: string;
+  alt: string;
+  className?: string;
+  sizes: string;
+}) {
+  const [src, setSrc] = useState(primary);
+  const [quality, setQuality] = useState<"maxres" | "hq" | "fallback">(
+    urls ? "maxres" : "fallback"
+  );
 
   if (!src) return null;
 
   return (
-    <img
+    <Image
       src={src}
       alt={alt}
       className={className}
+      width={1280}
+      height={720}
+      sizes={sizes}
+      quality={65}
       loading="lazy"
       decoding="async"
       onError={() => {
@@ -56,6 +64,33 @@ export default function YoutubeThumbImg({ youtubeUrl, alt, className, fallbackSr
           setQuality("fallback");
         }
       }}
+    />
+  );
+}
+
+/**
+ * YouTube poster (maxres → hqdefault) with optional static fallback.
+ */
+export default function YoutubeThumbImg({
+  youtubeUrl,
+  alt,
+  className,
+  sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw",
+  fallbackSrc,
+}: Props) {
+  const id = useMemo(() => youtubeVideoIdFromUrl(youtubeUrl), [youtubeUrl]);
+  const urls = id ? thumbUrls(id) : null;
+  const primary = urls?.maxres ?? fallbackSrc ?? "";
+
+  return (
+    <ResolvedYoutubeThumb
+      key={`${primary}|${fallbackSrc || ""}`}
+      primary={primary}
+      urls={urls}
+      fallbackSrc={fallbackSrc}
+      alt={alt}
+      className={className}
+      sizes={sizes}
     />
   );
 }

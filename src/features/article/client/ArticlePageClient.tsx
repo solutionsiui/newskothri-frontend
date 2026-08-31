@@ -23,12 +23,15 @@ import { categoryColors, publicArticleRouteSegment } from "../utils/formatArticl
 import { shareToTwitter, shareToWhatsApp } from "../utils/share";
 import { displayDek, displayHeadline } from "../../../services/articleDisplay";
 import { isBusinessArticle } from "../../../lib/markets/isBusinessArticle";
+import type { NewsItem } from "../types/article";
 
 export default function ArticlePageClient({
   articleId,
+  initialArticle,
   jsonLd,
 }: {
   articleId: string;
+  initialArticle?: NewsItem | null;
   jsonLd?: Record<string, unknown> | null;
 }) {
   const navigate = useNavigate();
@@ -45,7 +48,7 @@ export default function ArticlePageClient({
     recommendedArticles,
     mostReadSidebar,
     showBackTop,
-  } = useArticle(articleId);
+  } = useArticle(articleId, initialArticle);
 
   const { copied, handleCopyLink, handleUnifiedMobileShare } = useArticleClipboard();
 
@@ -116,7 +119,11 @@ export default function ArticlePageClient({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       )}
-      <motion.div className="article-progress-bar" style={{ scaleX, transformOrigin: "0%" }} />
+      <motion.div
+        className="article-progress-bar"
+        style={{ scaleX, transformOrigin: "0%" }}
+        aria-hidden="true"
+      />
       <div className="article-page-layout">
         <ArticleContent
           article={article}
@@ -209,6 +216,7 @@ export default function ArticlePageClient({
           className="mobile-strip-bookmark"
           onClick={() => void handleBookmarkToggle()}
           aria-label={t("बुकमार्क", "Bookmark")}
+          aria-pressed={bookmarked}
           style={bookmarked ? { color: "#BB1919" } : {}}
         >
           <Bookmark size={18} fill={bookmarked ? "currentColor" : "none"} />
@@ -218,6 +226,7 @@ export default function ArticlePageClient({
           className="mobile-strip-btn mobile-strip-upvote"
           onClick={() => void handleUpvoteToggle()}
           aria-label={t("अपवोट", "Upvote")}
+          aria-pressed={upvoted}
           style={upvoted ? { color: "#BB1919", borderColor: "#BB1919" } : {}}
         >
           <ThumbsUp size={18} fill={upvoted ? "currentColor" : "none"} />

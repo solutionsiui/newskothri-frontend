@@ -1,4 +1,4 @@
-import { IMG_EAGER } from "../lib/imageLoading";
+import Image from "next/image";
 
 export const BRAND_LOGO_SRC = "/brand-logo.png";
 
@@ -15,13 +15,15 @@ export default function BrandLogo({ className = "", height = 44, decorative = fa
   const alt = decorative ? "" : "News Kothri";
 
   return (
-    <img
+    <Image
       src={BRAND_LOGO_SRC}
       alt={alt}
       width={height}
       height={height}
+      sizes={`${height}px`}
       className={`brand-logo-img ${className}`.trim()}
-      {...IMG_EAGER}
+      loading="eager"
+      decoding="async"
       draggable={false}
       {...(decorative ? { "aria-hidden": true } : {})}
     />

@@ -1,14 +1,16 @@
 "use client";
 
 import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import dynamic from "next/dynamic";
+import Link from "next/link";
 import { Clock, Link2 } from "lucide-react";
 import { IconFacebook, IconWhatsApp, IconXLogo } from "../../../components/icons/ShareBrandIcons";
 import type { NewsItem } from "../types/article";
 import { categoryColors } from "../utils/formatArticle";
 import { shareToFacebook, shareToTwitter, shareToWhatsApp } from "../utils/share";
 import { shareLabels } from "../../../i18n/siteCopy";
-import MarketWidget from "../../../components/MarketWidget";
+
+const MarketWidget = dynamic(() => import("../../../components/MarketWidget"));
 
 type TFn = (hi: string, en: string) => string;
 
@@ -48,7 +50,6 @@ export default function ArticleSidebar({
   onCopyLink: () => void;
   showMarket?: boolean;
 }) {
-  const navigate = useNavigate();
   const sl = shareLabels(t);
   const moreArticles = useMemo(
     () => mergeSidebarArticles(sideRelated, mostReadSidebar, 8),
@@ -70,21 +71,18 @@ export default function ArticleSidebar({
               const mCat = lang === "hi" ? item.category : item.categoryEn;
               const mColor = categoryColors[item.categorySlug] || "#BB1919";
               return (
-                <li
-                  key={String(item.id)}
-                  className="aside-mostread-item"
-                  onClick={() => navigate(`/article/${item.id}`)}
-                  style={{ cursor: "pointer" }}
-                >
-                  <span className="aside-mostread-num">{String(i + 1).padStart(2, "0")}</span>
-                  <div className="aside-mostread-body">
-                    <span className="aside-mostread-cat" style={{ color: mColor }}>{mCat}</span>
-                    <h4 className="aside-mostread-title">{mTitle}</h4>
-                    <div className="aside-mostread-meta">
-                      <Clock size={10} />
-                      <span>{mTime}</span>
+                <li key={String(item.id)}>
+                  <Link href={`/article/${item.id}`} className="aside-mostread-item">
+                    <span className="aside-mostread-num">{String(i + 1).padStart(2, "0")}</span>
+                    <div className="aside-mostread-body">
+                      <span className="aside-mostread-cat" style={{ color: mColor }}>{mCat}</span>
+                      <h4 className="aside-mostread-title">{mTitle}</h4>
+                      <div className="aside-mostread-meta">
+                        <Clock size={10} aria-hidden />
+                        <span>{mTime}</span>
+                      </div>
                     </div>
-                  </div>
+                  </Link>
                 </li>
               );
             })}

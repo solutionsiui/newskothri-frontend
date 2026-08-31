@@ -40,6 +40,7 @@ export default function BottomNav() {
           key={id}
           href={path}
           className={`bottom-nav-tab ${active === id ? "active" : ""}`}
+          aria-current={active === id ? "page" : undefined}
         >
           {active === id && (
             <motion.div

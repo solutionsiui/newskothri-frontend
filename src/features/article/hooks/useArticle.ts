@@ -5,9 +5,9 @@ import { adaptArticle, adaptArticles } from "../../../services/articleAdapter";
 import { getArticleById, getPublishedArticlesPage, getRecommendedForArticle } from "../services/articleApi";
 import { articleLookupId, isArticleRefId, publicArticleSegmentsMatch } from "../utils/formatArticle";
 
-export function useArticle(articleId: string) {
-  const [article, setArticle] = useState<NewsItem | null>(null);
-  const [loading, setLoading] = useState(true);
+export function useArticle(articleId: string, initialArticle: NewsItem | null = null) {
+  const [article, setArticle] = useState<NewsItem | null>(initialArticle);
+  const [loading, setLoading] = useState(!initialArticle);
   const [imgErr, setImgErr] = useState(false);
   const [recommendedArticles, setRecommendedArticles] = useState<NewsItem[]>([]);
   const [mostReadSidebar, setMostReadSidebar] = useState<NewsItem[]>([]);
@@ -23,6 +23,11 @@ export function useArticle(articleId: string) {
     }
     if (!isArticleRefId(articleId)) {
       setArticle(null);
+      setLoading(false);
+      return;
+    }
+    if (initialArticle && publicArticleSegmentsMatch(articleId, initialArticle)) {
+      setArticle(initialArticle);
       setLoading(false);
       return;
     }
@@ -42,7 +47,7 @@ export function useArticle(articleId: string) {
     return () => {
       cancelled = true;
     };
-  }, [articleId]);
+  }, [articleId, initialArticle]);
 
   useEffect(() => {
     if (!articleId || !article || !publicArticleSegmentsMatch(articleId, article)) {

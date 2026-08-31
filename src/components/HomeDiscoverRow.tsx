@@ -7,7 +7,7 @@ import styles from "./home-discover-row.module.css";
 
 /** Weather snapshot + link to the home “More stories” infinite feed. */
 export default function HomeDiscoverRow() {
-  const { lang, t } = useLang();
+  const { t } = useLang();
 
   return (
     <section className={styles.wrap} aria-label={t("मौसम व खोज", "Weather and discovery")}>

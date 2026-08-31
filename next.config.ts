@@ -1,11 +1,12 @@
 import type { NextConfig } from "next";
+import path from "node:path";
 import { assertVercelWebNextEnv } from "./src/lib/vercelBuildEnv";
 import { getSecurityHeaders } from "./src/lib/securityHeaders";
 
 assertVercelWebNextEnv();
 
 /** Allow same-origin `/api` + `/uploads` proxy when env points at loopback or is unset (phone-on-LAN dev). */
-function useLocalApiRewrites(): boolean {
+function shouldUseLocalApiRewrites(): boolean {
   const raw = (process.env.NEXT_PUBLIC_API_ORIGIN || "").trim();
   if (!raw) return true;
   try {
@@ -48,6 +49,11 @@ const r2HostPattern = r2PublicImagePattern();
 
 const nextConfig: NextConfig = {
   images: {
+    // Editorial assets are photo-heavy. Prefer AVIF where supported and use a
+    // lower, explicitly allow-listed quality for responsive card/hero images.
+    formats: ["image/avif", "image/webp"],
+    qualities: [65, 75],
+    minimumCacheTTL: 86_400,
     remotePatterns: [
       { protocol: "https", hostname: "picsum.photos" },
       { protocol: "https", hostname: "i.ytimg.com" },
@@ -66,7 +72,7 @@ const nextConfig: NextConfig = {
   webpack: (config) => {
     config.resolve.alias = {
       ...(config.resolve.alias || {}),
-      "react-router-dom": require("path").resolve(__dirname, "src/lib/routerShim.tsx"),
+      "react-router-dom": path.resolve(__dirname, "src/lib/routerShim.tsx"),
     };
     return config;
   },
@@ -80,7 +86,7 @@ const nextConfig: NextConfig = {
   },
   async rewrites() {
     // Remote-only `NEXT_PUBLIC_API_ORIGIN` (e.g. https://api.example.com): browser hits API directly; no proxy.
-    if (!useLocalApiRewrites()) return [];
+    if (!shouldUseLocalApiRewrites()) return [];
     return [
       { source: "/api/:path*", destination: "http://127.0.0.1:5050/api/:path*" },
       { source: "/uploads/:path*", destination: "http://127.0.0.1:5050/uploads/:path*" },

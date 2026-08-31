@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import dynamic from "next/dynamic";
 import DOMPurify from "dompurify";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -12,8 +13,6 @@ import { categories } from "../../../data/publicCategories";
 import { categoryColors } from "../utils/formatArticle";
 import type { NewsItem } from "../types/article";
 import ArticleAuthor from "./ArticleAuthor";
-import CommentSection from "./CommentSection";
-import { ArticleRecommendationStrip } from "./RelatedArticles";
 import { ArticleYoutubeClip } from "./ArticleYoutubeEmbeds";
 import { splitBodyWithYoutubeSlots } from "../utils/youtubeEmbedMarkers";
 import { youtubeVideoIdFromUrl } from "../../../utils/youtube";
@@ -24,10 +23,15 @@ import { isHtmlParagraph } from "../utils/formatArticle";
 import { nativeShare, shareToFacebook, shareToTwitter, shareToWhatsApp } from "../utils/share";
 import { shareLabels } from "../../../i18n/siteCopy";
 import { lazyLoadImagesInHtml } from "../../../lib/imageLoading";
-import MarketWidget from "../../../components/MarketWidget";
+
+const MarketWidget = dynamic(() => import("../../../components/MarketWidget"));
+const ArticleRecommendationStrip = dynamic(
+  () => import("./RelatedArticles").then((mod) => mod.ArticleRecommendationStrip),
+  { ssr: false }
+);
 
 function sanitizeArticleHtml(html: string): string {
-  /* DOMPurify is browser-only; during SSR pass through the trusted CMS HTML. */
+  /* Initial server data is sanitized before crossing the RSC boundary. */
   if (typeof window === "undefined") return lazyLoadImagesInHtml(html);
   const clean = DOMPurify.sanitize(html, {
     ALLOWED_TAGS: [
@@ -100,7 +104,10 @@ export default function ArticleContent({
     article.categorySlugs?.length ? article.categorySlugs : [article.categorySlug];
   const time = lang === "hi" ? article.time : article.timeEn;
   const author = lang === "hi" ? article.author : article.authorEn;
-  const youtubeEmbeds = article.youtubeEmbeds ?? [];
+  const youtubeEmbeds = useMemo(
+    () => article.youtubeEmbeds ?? [],
+    [article.youtubeEmbeds]
+  );
 
   const bodyBlocks = useMemo(() => {
     const html = String(bodyHtml || "").trim();
@@ -172,6 +179,8 @@ export default function ArticleContent({
             style={bookmarked ? { borderColor: color, color, background: color + "12" } : {}}
             onClick={() => void onBookmark()}
             title={t("बुकमार्क", "Bookmark")}
+            aria-label={t("बुकमार्क", "Bookmark")}
+            aria-pressed={bookmarked}
           >
             <Bookmark size={15} fill={bookmarked ? "currentColor" : "none"} />
           </button>
@@ -181,6 +190,8 @@ export default function ArticleContent({
             style={upvoted ? { borderColor: color, color, background: color + "12" } : {}}
             onClick={() => void onUpvote()}
             title={t("अपवोट", "Upvote")}
+            aria-label={t("अपवोट", "Upvote")}
+            aria-pressed={upvoted}
           >
             <ThumbsUp size={15} fill={upvoted ? "currentColor" : "none"} />
           </button>
@@ -323,7 +334,6 @@ export default function ArticleContent({
         </section>
       )}
       <ArticleRecommendationStrip items={stripItems} lang={lang} t={t} />
-      <CommentSection t={t} />
     </main>
   );
 }

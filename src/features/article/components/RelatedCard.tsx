@@ -1,27 +1,35 @@
 "use client";
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import Link from "next/link";
 import { Clock } from "lucide-react";
 import type { NewsItem } from "../types/article";
 import { categoryColors } from "../utils/formatArticle";
+import ArticleImage from "../../../components/ArticleImage";
 
 export default function RelatedCard({ item, lang }: { item: NewsItem; lang: string }) {
-  const navigate = useNavigate();
   const [err, setErr] = useState(false);
   const title = lang === "hi" ? item.title : item.titleEn;
   const time = lang === "hi" ? item.time : item.timeEn;
   const cat = lang === "hi" ? item.category : item.categoryEn;
   const color = categoryColors[item.categorySlug] || "#BB1919";
   return (
-    <article
+    <Link
+      href={`/article/${item.id}`}
       className="aside-related-card aside-related-card--premium"
-      onClick={() => navigate(`/article/${item.id}`)}
-      style={{ cursor: "pointer" }}
+      aria-label={title}
     >
       <div className="aside-related-img">
         {!err ? (
-          <img src={item.image} alt="" width={96} height={64} onError={() => setErr(true)} loading="lazy" decoding="async" />
+          <ArticleImage
+            src={item.image}
+            alt=""
+            width={item.imageWidth}
+            height={item.imageHeight}
+            sizes="84px"
+            onError={() => setErr(true)}
+            loading="lazy"
+          />
         ) : (
           <div style={{ width: "100%", height: "100%", background: color + "22" }} />
         )}
@@ -30,10 +38,10 @@ export default function RelatedCard({ item, lang }: { item: NewsItem; lang: stri
         <span className="aside-related-cat" style={{ color }}>{cat}</span>
         <h4 className="aside-related-title">{title}</h4>
         <div className="aside-related-meta">
-          <Clock size={10} />
+          <Clock size={10} aria-hidden />
           <span>{time}</span>
         </div>
       </div>
-    </article>
+    </Link>
   );
 }

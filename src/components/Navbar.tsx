@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { useNavigate } from "react-router-dom";
 import { usePathname } from "next/navigation";
 import { normalizePathname } from "../lib/routerShim";
@@ -34,6 +35,8 @@ export default function Navbar({ darkMode, toggleDark }: NavbarProps) {
   const searchRef   = useRef<HTMLInputElement>(null);
   const searchWrap  = useRef<HTMLDivElement>(null);
   const mobileMenuBtnRef = useRef<HTMLButtonElement>(null);
+  const mobileDrawerRef = useRef<HTMLDivElement>(null);
+  const drawerCloseRef = useRef<HTMLButtonElement>(null);
   const prevMobileOpen = useRef(false);
   const navigate = useNavigate();
   const pathname = normalizePathname(usePathname() || "/");
@@ -61,11 +64,18 @@ export default function Navbar({ darkMode, toggleDark }: NavbarProps) {
 
   /* Close drawer on navigation — avoids invisible overlay / locked scroll on mobile */
   useEffect(() => {
-    setMobileOpen(false);
-    setSearchActive(false);
-    setSearchQuery("");
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setMobileOpen(false);
+      setSearchActive(false);
+      setSearchQuery("");
+    });
     document.body.style.overflow = "";
     document.body.style.removeProperty("overflow");
+    return () => {
+      cancelled = true;
+    };
   }, [pathname]);
 
   /* Mobile drawer: lock page scroll only while open */
@@ -75,7 +85,29 @@ export default function Navbar({ darkMode, toggleDark }: NavbarProps) {
       return;
     }
     document.body.style.overflow = "hidden";
+    const focusHandle = window.requestAnimationFrame(() => drawerCloseRef.current?.focus());
+    const trapFocus = (event: KeyboardEvent) => {
+      if (event.key !== "Tab" || !mobileDrawerRef.current) return;
+      const focusable = Array.from(
+        mobileDrawerRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      );
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!first || !last) return;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", trapFocus);
     return () => {
+      window.cancelAnimationFrame(focusHandle);
+      document.removeEventListener("keydown", trapFocus);
       document.body.style.overflow = "";
     };
   }, [mobileOpen]);
@@ -128,16 +160,14 @@ export default function Navbar({ darkMode, toggleDark }: NavbarProps) {
   useEffect(() => {
     const q = searchQuery.trim();
     if (!searchActive || q.length < 2) {
-      setRemoteResults([]);
-      setSearchFetched(false);
-      setSearchLoading(false);
       return;
     }
-    setSearchLoading(true);
-    setSearchFetched(false);
     const handle = window.setTimeout(() => {
+      setSearchLoading(true);
+      setSearchFetched(false);
       fetchPublicSearch(q, 12, lang)
         .then((raw) => setRemoteResults(adaptArticles(raw, lang)))
+        .catch(() => setRemoteResults([]))
         .finally(() => {
           setSearchLoading(false);
           setSearchFetched(true);
@@ -163,17 +193,16 @@ export default function Navbar({ darkMode, toggleDark }: NavbarProps) {
             {t("न्यूज़ कोठरी", "News Kothri")}
           </span>
 
-          <a
+          <Link
             href="/"
             className="nav-logo"
-            onClick={(e) => { e.preventDefault(); navigate("/"); }}
             aria-label={t("न्यूज़ कोठरी — होम", "News Kothri — Home")}
           >
             <BrandLogo className="nav-brand-logo-img" height={44} decorative />
             <span className="nav-brand-name nav-brand-name--desktop">
               {t("न्यूज़ कोठरी", "News Kothri")}
             </span>
-          </a>
+          </Link>
 
           {/* Center tabs: Home | Shows */}
           <div className="nav-main-tabs">
@@ -181,6 +210,7 @@ export default function Navbar({ darkMode, toggleDark }: NavbarProps) {
               type="button"
               className={`nav-main-tab nav-tab-home${!isShows ? " tab-active" : ""}`}
               onClick={() => navigate("/")}
+              aria-current={!isShows ? "page" : undefined}
             >
               <Home size={15} strokeWidth={2} aria-hidden />
               {t("होम", "Home")}
@@ -189,6 +219,7 @@ export default function Navbar({ darkMode, toggleDark }: NavbarProps) {
               type="button"
               className={`nav-main-tab nav-tab-shows${isShows ? " tab-active" : ""}`}
               onClick={() => navigate("/shows")}
+              aria-current={isShows ? "page" : undefined}
             >
               <Tv2 size={15} strokeWidth={2} aria-hidden />
               {t("शोज़", "Shows")}
@@ -229,6 +260,7 @@ export default function Navbar({ darkMode, toggleDark }: NavbarProps) {
                 onClick={() => setMobileOpen(true)}
                 aria-label={t("मेनू खोलें", "Open menu")}
                 aria-expanded={mobileOpen}
+                aria-controls="kn-mobile-drawer"
               >
                 <Menu size={20} strokeWidth={2} aria-hidden />
               </button>
@@ -254,6 +286,7 @@ export default function Navbar({ darkMode, toggleDark }: NavbarProps) {
                 key={cat.slug}
                 className={`nav-cat-pill${activeSlug === cat.slug ? " cat-pill-active" : ""}`}
                 onClick={() => handleCatClick(cat.slug)}
+                aria-current={activeSlug === cat.slug ? "page" : undefined}
               >
                 {lang === "hi" ? cat.name : cat.nameEn}
               </button>
@@ -345,6 +378,8 @@ export default function Navbar({ darkMode, toggleDark }: NavbarProps) {
               onClick={() => setMobileOpen(false)}
             />
             <motion.div
+              ref={mobileDrawerRef}
+              id="kn-mobile-drawer"
               className="mobile-drawer"
               role="dialog"
               aria-modal="true"
@@ -353,15 +388,15 @@ export default function Navbar({ darkMode, toggleDark }: NavbarProps) {
               transition={{ type: "spring", damping: 28, stiffness: 300 }}
             >
               <div className="drawer-header">
-                <a
+                <Link
                   href="/"
                   className="drawer-brand-hit"
-                  onClick={(e) => { e.preventDefault(); navigate("/"); setMobileOpen(false); }}
+                  onClick={() => setMobileOpen(false)}
                   aria-label={t("न्यूज़ कोठ्री — होम", "News Kothri — Home")}
                 >
                   <BrandLogo className="drawer-brand-logo-img" height={40} decorative />
-                </a>
-                <button type="button" onClick={() => setMobileOpen(false)} className="drawer-close" aria-label={t("बंद करें", "Close")}><X size={22} aria-hidden /></button>
+                </Link>
+                <button ref={drawerCloseRef} type="button" onClick={() => setMobileOpen(false)} className="drawer-close" aria-label={t("बंद करें", "Close")}><X size={22} aria-hidden /></button>
               </div>
 
               {/* Drawer: Home / Shows tabs */}
@@ -370,6 +405,7 @@ export default function Navbar({ darkMode, toggleDark }: NavbarProps) {
                   type="button"
                   className={`nav-main-tab nav-tab-home${!isShows ? " tab-active" : ""}`}
                   onClick={() => { navigate("/"); setMobileOpen(false); }}
+                  aria-current={!isShows ? "page" : undefined}
                 >
                   <Home size={14} strokeWidth={2} aria-hidden /> {t("होम", "Home")}
                 </button>
@@ -377,6 +413,7 @@ export default function Navbar({ darkMode, toggleDark }: NavbarProps) {
                   type="button"
                   className={`nav-main-tab nav-tab-shows${isShows ? " tab-active" : ""}`}
                   onClick={() => { navigate("/shows"); setMobileOpen(false); }}
+                  aria-current={isShows ? "page" : undefined}
                 >
                   <Tv2 size={14} strokeWidth={2} aria-hidden /> {t("शोज़", "Shows")}
                 </button>
@@ -407,6 +444,7 @@ export default function Navbar({ darkMode, toggleDark }: NavbarProps) {
                     className={`drawer-cat-btn${activeSlug === cat.slug ? " active" : ""}`}
                     whileTap={{ scale: 0.97 }}
                     onClick={() => handleCatClick(cat.slug)}
+                    aria-current={activeSlug === cat.slug ? "page" : undefined}
                   >
                     <span>{lang === "hi" ? cat.name : cat.nameEn}</span>
                     <ChevronRight size={15} className="drawer-chevron" />

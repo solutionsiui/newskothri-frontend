@@ -14,6 +14,7 @@ export type ArticleImageProps = {
   fill?: boolean;
   loading?: "eager" | "lazy";
   fetchPriority?: "high" | "low" | "auto";
+  quality?: number;
   style?: CSSProperties;
   onLoad?: (event: SyntheticEvent<HTMLImageElement>) => void;
   onError?: () => void;
@@ -33,6 +34,7 @@ export default function ArticleImage({
   fill = true,
   loading = "lazy",
   fetchPriority = "auto",
+  quality = 65,
   style,
   onLoad,
   onError,
@@ -47,6 +49,8 @@ export default function ArticleImage({
         sizes={sizes}
         loading={loading}
         fetchPriority={fetchPriority}
+        quality={quality}
+        decoding="async"
         onLoad={onLoad}
         onError={onError}
       />
@@ -63,6 +67,8 @@ export default function ArticleImage({
       sizes={sizes}
       loading={loading}
       fetchPriority={fetchPriority}
+      quality={quality}
+      decoding="async"
       style={{ width: "100%", height: "auto", ...style }}
       onLoad={onLoad}
       onError={onError}

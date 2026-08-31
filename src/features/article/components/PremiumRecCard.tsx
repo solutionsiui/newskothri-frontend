@@ -1,38 +1,38 @@
 "use client";
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import Link from "next/link";
 import { Clock } from "lucide-react";
 import type { NewsItem } from "../types/article";
 import { categoryColors, publicArticleRouteSegment } from "../utils/formatArticle";
+import ArticleImage from "../../../components/ArticleImage";
 
 export default function PremiumRecCard({ item, lang }: { item: NewsItem; lang: string }) {
-  const navigate = useNavigate();
   const [err, setErr] = useState(false);
   const title = lang === "hi" ? item.title : item.titleEn;
   const time = lang === "hi" ? item.time : item.timeEn;
   const cat = lang === "hi" ? item.category : item.categoryEn;
   const color = categoryColors[item.categorySlug] || "#BB1919";
   const routeSegment = publicArticleRouteSegment(item);
-  const go = () => navigate(`/article/${routeSegment}`);
 
   return (
-    <article
+    <Link
+      href={`/article/${routeSegment}`}
       className="article-rec-card"
-      role="link"
-      tabIndex={0}
-      onClick={go}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          go();
-        }
-      }}
       aria-label={title}
     >
       <div className="article-rec-card-media">
         {!err ? (
-          <img src={item.image} alt="" className="article-rec-card-img" onError={() => setErr(true)} loading="lazy" />
+          <ArticleImage
+            src={item.image}
+            alt=""
+            width={item.imageWidth}
+            height={item.imageHeight}
+            className="article-rec-card-img"
+            sizes="(max-width: 768px) 78vw, 280px"
+            onError={() => setErr(true)}
+            loading="lazy"
+          />
         ) : (
           <div className="article-rec-card-fallback" style={{ background: `linear-gradient(145deg, ${color}33, var(--bg-secondary))` }} />
         )}
@@ -47,7 +47,6 @@ export default function PremiumRecCard({ item, lang }: { item: NewsItem; lang: s
           <span>{time}</span>
         </div>
       </div>
-    </article>
+    </Link>
   );
 }
-

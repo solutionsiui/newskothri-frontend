@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { cookies } from "next/headers";
 import Script from "next/script";
 import {
@@ -7,7 +8,6 @@ import {
   localizedSiteName,
 } from "../lib/seo/metadataHelpers";
 import type { UiLang } from "../i18n/siteCopy";
-import GoogleAnalytics from "../components/GoogleAnalytics";
 import AppChrome from "./AppChrome";
 import AppProviders from "./AppProviders";
 import { mukta } from "../lib/fonts";
@@ -64,29 +64,29 @@ export default async function RootLayout({
   const jar = await cookies();
   const initialLang = jar.get("kn-lang")?.value === "en" ? "en" : "hi";
   const initialDark = jar.get("kn-dark")?.value === "1";
+  const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
 
   return (
-  <html
-    lang={initialLang === "en" ? "en" : "hi"}
-    className={mukta.variable}
-    suppressHydrationWarning
-    style={{ colorScheme: initialDark ? "dark" : "light" }}
-    data-scroll-behavior="smooth"
-  >
-    <head>
-      <Script
-        async
-        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9323779736575532"
-        crossOrigin="anonymous"
-        strategy="afterInteractive"
-      />
-    </head>
-    <body suppressHydrationWarning>
-      <GoogleAnalytics />
-      <AppProviders initialLang={initialLang}>
-        <AppChrome initialDark={initialDark}>{children}</AppChrome>
-      </AppProviders>
-    </body>
-  </html>
-);
+    <html
+      lang={initialLang === "en" ? "en" : "hi"}
+      className={mukta.variable}
+      suppressHydrationWarning
+      style={{ colorScheme: initialDark ? "dark" : "light" }}
+      data-scroll-behavior="smooth"
+    >
+      <head>
+        <Script
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9323779736575532"
+          crossOrigin="anonymous"
+          strategy="lazyOnload"
+        />
+      </head>
+      <body suppressHydrationWarning>
+        <AppProviders initialLang={initialLang}>
+          <AppChrome initialDark={initialDark}>{children}</AppChrome>
+        </AppProviders>
+      </body>
+      {gaMeasurementId ? <GoogleAnalytics gaId={gaMeasurementId} /> : null}
+    </html>
+  );
 }

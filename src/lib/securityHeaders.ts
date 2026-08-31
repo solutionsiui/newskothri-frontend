@@ -1,4 +1,5 @@
-function hostFromEnvUrl(raw: string | undefined): string | null {  const trimmed = (raw || "").trim();
+function hostFromEnvUrl(raw: string | undefined): string | null {
+  const trimmed = (raw || "").trim();
   if (!trimmed) return null;
   try {
     const u = new URL(trimmed.includes("://") ? trimmed : `https://${trimmed}`);
@@ -21,11 +22,14 @@ function buildContentSecurityPolicy(): string {
     "https://www.google-analytics.com",
     "https://region1.google-analytics.com",
     "https://www.googletagmanager.com",
+    "https://api.open-meteo.com",
     "https://accounts.google.com",
     "https://pagead2.googlesyndication.com",
     "https://*.googlesyndication.com",
     "https://*.google.com",
     "https://*.doubleclick.net",
+    "https://*.googleadservices.com",
+    "https://*.googletagservices.com",
     "https://ep1.adtrafficquality.google",
     "https://ep2.adtrafficquality.google",
     "https://*.adtrafficquality.google",
@@ -45,6 +49,7 @@ function buildContentSecurityPolicy(): string {
     "https://*.doubleclick.net",
     "https://*.google.com",
     "https://*.gstatic.com",
+    "https://*.googleadservices.com",
   ].filter(Boolean);
 
   const scriptSrc = [
@@ -56,6 +61,8 @@ function buildContentSecurityPolicy(): string {
     "https://pagead2.googlesyndication.com",
     "https://*.googlesyndication.com",
     "https://*.doubleclick.net",
+    "https://*.googleadservices.com",
+    "https://*.googletagservices.com",
     "https://*.google.com",
     "https://*.adtrafficquality.google",
   ];
@@ -69,6 +76,7 @@ function buildContentSecurityPolicy(): string {
     "https://www.youtube-nocookie.com",
     "https://*.googlesyndication.com",
     "https://*.doubleclick.net",
+    "https://*.googleadservices.com",
     "https://*.google.com",
     "https://ep1.adtrafficquality.google",
     "https://ep2.adtrafficquality.google",

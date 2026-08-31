@@ -49,6 +49,7 @@ export function ArticleYoutubeClip({
             youtubeUrl={item.youtubeUrl}
             alt=""
             className="article-youtube-thumb-img"
+            sizes="300px"
           />
           <span className="article-youtube-thumb-overlay">
             <span className="article-youtube-play-badge">
